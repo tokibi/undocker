@@ -65,3 +65,11 @@ func (r Registry) Blob(repo string, digest digest.Digest) (io.ReadCloser, error)
 	}
 	return sess.DownloadBlob(repo, digest)
 }
+
+func (r Registry) Image(repo, tag string) Image {
+	return Image{
+		Source:     r,
+		Repository: repo,
+		Tag:        tag,
+	}
+}

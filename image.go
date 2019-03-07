@@ -10,7 +10,7 @@ import (
 
 type Source interface {
 	Find(repo, tag string) error
-	Layers(repo, tag string) ([]distribution.Describable, error)
+	Layers(repo, tag string) ([]distribution.Descriptor, error)
 	Blob(repo string, digest digest.Digest) (io.ReadCloser, error)
 	Image(repo, tag string) Image
 }
@@ -45,7 +45,7 @@ func (image Image) Exists() error {
 	return image.Source.Find(image.Repository, image.Tag)
 }
 
-func (image Image) Layers() ([]distribution.Describable, error) {
+func (image Image) Layers() ([]distribution.Descriptor, error) {
 	return image.Source.Layers(image.Repository, image.Tag)
 }
 
