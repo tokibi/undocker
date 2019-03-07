@@ -47,7 +47,11 @@ func (r Registry) Find(repo, tag string) error {
 }
 
 func (r Registry) Layers(repo, tag string) ([]distribution.Descriptor, error) {
-	manifest, err := r.session.ManifestV2(repo, tag)
+	sess, err := r.Authorize()
+	if err != nil {
+		return nil, err
+	}
+	manifest, err := sess.ManifestV2(repo, tag)
 	if err != nil {
 		return nil, err
 	}
@@ -55,5 +59,9 @@ func (r Registry) Layers(repo, tag string) ([]distribution.Descriptor, error) {
 }
 
 func (r Registry) Blob(repo string, digest digest.Digest) (io.ReadCloser, error) {
-	return r.session.DownloadBlob(repo, digest)
+	sess, err := r.Authorize()
+	if err != nil {
+		return nil, err
+	}
+	return sess.DownloadBlob(repo, digest)
 }
