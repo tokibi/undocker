@@ -21,14 +21,14 @@ type Image struct {
 	Tag        string
 }
 
-func (image Image) Unpack(dir string) error {
-	layers, err := image.Layers()
+func (i Image) Unpack(dir string) error {
+	layers, err := i.Layers()
 	if err != nil {
 		return err
 	}
 
 	for _, layer := range layers {
-		reader, err := image.Blob(layer.Descriptor().Digest)
+		reader, err := i.Blob(layer.Descriptor().Digest)
 		if err != nil {
 			return err
 		}
@@ -41,16 +41,16 @@ func (image Image) Unpack(dir string) error {
 	return nil
 }
 
-func (image Image) Exists() error {
-	return image.Source.Find(image.Repository, image.Tag)
+func (i Image) Exists() error {
+	return i.Source.Find(i.Repository, i.Tag)
 }
 
-func (image Image) Layers() ([]distribution.Descriptor, error) {
-	return image.Source.Layers(image.Repository, image.Tag)
+func (i Image) Layers() ([]distribution.Descriptor, error) {
+	return i.Source.Layers(i.Repository, i.Tag)
 }
 
-func (image Image) Blob(digest digest.Digest) (io.ReadCloser, error) {
-	reader, err := image.Source.Blob(image.Repository, digest)
+func (i Image) Blob(digest digest.Digest) (io.ReadCloser, error) {
+	reader, err := i.Source.Blob(i.Repository, digest)
 	if err != nil {
 		return nil, err
 	}
