@@ -45,14 +45,14 @@ func untar(r io.Reader, dir string) error {
 				}
 			}
 		case mode.IsRegular():
-			f, err := os.OpenFile(abs, os.O_CREATE|os.O_RDWR, os.FileMode(f.Mode))
+			wf, err := os.OpenFile(abs, os.O_CREATE|os.O_RDWR, os.FileMode(f.Mode))
 			if err != nil {
 				return err
 			}
-			if _, err := io.Copy(f, tr); err != nil {
+			if _, err := io.Copy(wf, tr); err != nil {
 				return err
 			}
-			f.Close()
+			wf.Close()
 		}
 	}
 	return nil

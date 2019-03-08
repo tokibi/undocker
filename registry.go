@@ -20,7 +20,6 @@ func (r *Registry) Authorize() (*registry.Registry, error) {
 	if r.session != nil {
 		return r.session, nil
 	}
-
 	reg, err := registry.New(r.URL, r.Username, r.Password)
 	if err != nil {
 		return nil, err
