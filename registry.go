@@ -29,9 +29,6 @@ func NewRegistry(url, username, password string) (*Registry, error) {
 }
 
 func (r *Registry) Authorize() error {
-	if r.session != nil {
-		return nil
-	}
 	sess, err := registry.New(r.URL, r.Username, r.Password)
 	if err != nil {
 		return err
