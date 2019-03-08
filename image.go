@@ -3,6 +3,8 @@ package undocker
 import (
 	"io"
 
+	"github.com/pkg/errors"
+
 	"github.com/docker/distribution"
 	"github.com/opencontainers/go-digest"
 	"github.com/tokibi/undocker/internal/untar"
@@ -22,13 +24,15 @@ type Image struct {
 }
 
 func (i Image) Unpack(dir string) error {
+	if !i.Exists() {
+		return errors.New("Image not found")
+	}
 	layers, err := i.Layers()
 	if err != nil {
 		return err
 	}
-
 	for _, layer := range layers {
-		reader, err := i.Blob(layer.Descriptor().Digest)
+		reader, err := i.Blob(layer.Digest)
 		if err != nil {
 			return err
 		}
@@ -37,12 +41,14 @@ func (i Image) Unpack(dir string) error {
 			reader.Close()
 		}
 	}
-
 	return nil
 }
 
-func (i Image) Exists() error {
-	return i.Source.Find(i.Repository, i.Tag)
+func (i Image) Exists() bool {
+	if err := i.Source.Find(i.Repository, i.Tag); err != nil {
+		return false
+	}
+	return true
 }
 
 func (i Image) Layers() ([]distribution.Descriptor, error) {
