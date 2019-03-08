@@ -16,24 +16,32 @@ type Registry struct {
 	session  *registry.Registry
 }
 
-func (r *Registry) Authorize() (*registry.Registry, error) {
-	if r.session != nil {
-		return r.session, nil
+func NewRegistry(url, username, password string) (*Registry, error) {
+	r := &Registry{
+		URL:      url,
+		Username: username,
+		Password: password,
 	}
-	reg, err := registry.New(r.URL, r.Username, r.Password)
-	if err != nil {
+	if err := r.Authorize(); err != nil {
 		return nil, err
 	}
-	r.session = reg
-	return reg, nil
+	return r, nil
 }
 
-func (r Registry) Find(repository, tag string) error {
-	sess, err := r.Authorize()
+func (r *Registry) Authorize() error {
+	if r.session != nil {
+		return nil
+	}
+	sess, err := registry.New(r.URL, r.Username, r.Password)
 	if err != nil {
 		return err
 	}
-	tags, err := sess.Tags(repository)
+	r.session = sess
+	return nil
+}
+
+func (r Registry) Find(repository, tag string) error {
+	tags, err := r.session.Tags(repository)
 	if err != nil {
 		return errors.Wrap(err, "Repository not found")
 	}
@@ -46,11 +54,7 @@ func (r Registry) Find(repository, tag string) error {
 }
 
 func (r Registry) Layers(repository, tag string) ([]distribution.Descriptor, error) {
-	sess, err := r.Authorize()
-	if err != nil {
-		return nil, err
-	}
-	manifest, err := sess.ManifestV2(repository, tag)
+	manifest, err := r.session.ManifestV2(repository, tag)
 	if err != nil {
 		return nil, err
 	}
@@ -58,11 +62,7 @@ func (r Registry) Layers(repository, tag string) ([]distribution.Descriptor, err
 }
 
 func (r Registry) Blob(repository string, digest digest.Digest) (io.ReadCloser, error) {
-	sess, err := r.Authorize()
-	if err != nil {
-		return nil, err
-	}
-	return sess.DownloadBlob(repository, digest)
+	return r.session.DownloadBlob(repository, digest)
 }
 
 func (r Registry) Image(repository, tag string) Image {
