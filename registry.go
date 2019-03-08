@@ -28,12 +28,12 @@ func (r *Registry) Authorize() (*registry.Registry, error) {
 	return reg, nil
 }
 
-func (r Registry) Find(repo, tag string) error {
+func (r Registry) Find(repository, tag string) error {
 	sess, err := r.Authorize()
 	if err != nil {
 		return err
 	}
-	tags, err := sess.Tags(repo)
+	tags, err := sess.Tags(repository)
 	if err != nil {
 		return errors.Wrap(err, "Repository not found")
 	}
@@ -45,30 +45,30 @@ func (r Registry) Find(repo, tag string) error {
 	return errors.New("Tag not found")
 }
 
-func (r Registry) Layers(repo, tag string) ([]distribution.Descriptor, error) {
+func (r Registry) Layers(repository, tag string) ([]distribution.Descriptor, error) {
 	sess, err := r.Authorize()
 	if err != nil {
 		return nil, err
 	}
-	manifest, err := sess.ManifestV2(repo, tag)
+	manifest, err := sess.ManifestV2(repository, tag)
 	if err != nil {
 		return nil, err
 	}
 	return manifest.Layers, nil
 }
 
-func (r Registry) Blob(repo string, digest digest.Digest) (io.ReadCloser, error) {
+func (r Registry) Blob(repository string, digest digest.Digest) (io.ReadCloser, error) {
 	sess, err := r.Authorize()
 	if err != nil {
 		return nil, err
 	}
-	return sess.DownloadBlob(repo, digest)
+	return sess.DownloadBlob(repository, digest)
 }
 
-func (r Registry) Image(repo, tag string) Image {
+func (r Registry) Image(repository, tag string) Image {
 	return Image{
 		Source:     r,
-		Repository: repo,
+		Repository: repository,
 		Tag:        tag,
 	}
 }

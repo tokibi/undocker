@@ -11,10 +11,10 @@ import (
 )
 
 type Source interface {
-	Find(repo, tag string) error
-	Layers(repo, tag string) ([]distribution.Descriptor, error)
-	Blob(repo string, digest digest.Digest) (io.ReadCloser, error)
-	Image(repo, tag string) Image
+	Find(repository, tag string) error
+	Layers(repository, tag string) ([]distribution.Descriptor, error)
+	Blob(repository string, digest digest.Digest) (io.ReadCloser, error)
+	Image(repository, tag string) Image
 }
 
 type Image struct {
