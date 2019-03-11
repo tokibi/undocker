@@ -99,7 +99,7 @@ func (r Registry) Blob(repository string, digest digest.Digest) (io.Reader, erro
 		return nil, err
 	}
 
-	// Blob fetched from Docker Registry is compressed with gzip.
+	// Blob on registry is compressed with gzip.
 	gr, err := gzip.NewReader(blob)
 	if err != nil {
 		return nil, err
@@ -110,12 +110,12 @@ func (r Registry) Blob(repository string, digest digest.Digest) (io.Reader, erro
 func (r Registry) Image(repository, tag string) Image {
 	return Image{
 		Source:     r,
-		Repository: addRepositoryPrefix(repository),
+		Repository: commonRepositoryCompletion(repository),
 		Tag:        tag,
 	}
 }
 
-func addRepositoryPrefix(repository string) string {
+func commonRepositoryCompletion(repository string) string {
 	if len(strings.Split(repository, "/")) == 1 {
 		return "library/" + repository
 	}
