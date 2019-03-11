@@ -1,11 +1,11 @@
 package undocker
 
 import (
-	"bytes"
 	"compress/gzip"
 	"io"
 
 	"github.com/docker/distribution"
+	"github.com/docker/distribution/manifest/schema2"
 	"github.com/heroku/docker-registry-client/registry"
 	"github.com/opencontainers/go-digest"
 	"github.com/pkg/errors"
@@ -45,6 +45,14 @@ func (r Registry) Exists(repository, tag string) bool {
 		return false
 	}
 	return true
+}
+
+func (r Registry) Manifest(repository, tag string) (*schema2.DeserializedManifest, error) {
+	manifest, err := r.session.ManifestV2(repository, tag)
+	if err != nil {
+		return nil, err
+	}
+	return manifest, nil
 }
 
 func (r Registry) Find(repository, tag string) error {
