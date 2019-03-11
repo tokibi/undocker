@@ -3,6 +3,7 @@ package undocker
 import (
 	"compress/gzip"
 	"io"
+	"strings"
 
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/manifest/schema2"
@@ -109,7 +110,14 @@ func (r Registry) Blob(repository string, digest digest.Digest) (io.Reader, erro
 func (r Registry) Image(repository, tag string) Image {
 	return Image{
 		Source:     r,
-		Repository: repository,
+		Repository: addRepositoryPrefix(repository),
 		Tag:        tag,
 	}
+}
+
+func addRepositoryPrefix(repository string) string {
+	if len(strings.Split(repository, "/")) == 1 {
+		return "library/" + repository
+	}
+	return repository
 }
