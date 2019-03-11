@@ -89,17 +89,13 @@ func (r Registry) Blob(repository string, digest digest.Digest) (io.Reader, erro
 	if err != nil {
 		return nil, err
 	}
-	defer blob.Close()
 
+	// Blob fetched from Docker Registry is compressed with gzip.
 	gr, err := gzip.NewReader(blob)
 	if err != nil {
 		return nil, err
 	}
-	defer gr.Close()
-
-	buf := new(bytes.Buffer)
-	io.Copy(buf, gr)
-	return buf, nil
+	return gr, nil
 }
 
 func (r Registry) Image(repository, tag string) Image {
