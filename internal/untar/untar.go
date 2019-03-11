@@ -2,7 +2,6 @@ package untar
 
 import (
 	"archive/tar"
-	"compress/gzip"
 	"io"
 	"os"
 	"path/filepath"
@@ -13,14 +12,7 @@ func Untar(r io.Reader, dir string) error {
 }
 
 func untar(r io.Reader, dir string) error {
-	gzr, err := gzip.NewReader(r)
-	if err != nil {
-		return err
-	}
-	defer gzr.Close()
-
-	tr := tar.NewReader(gzr)
-
+	tr := tar.NewReader(r)
 	for {
 		f, err := tr.Next()
 		if err == io.EOF {
