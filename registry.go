@@ -1,6 +1,8 @@
 package undocker
 
 import (
+	"bytes"
+	"compress/gzip"
 	"io"
 
 	"github.com/docker/distribution"
@@ -37,6 +39,14 @@ func (r *Registry) Authorize() error {
 	return nil
 }
 
+func (r Registry) Exists(repository, tag string) bool {
+	err := r.Find(repository, tag)
+	if err != nil {
+		return false
+	}
+	return true
+}
+
 func (r Registry) Find(repository, tag string) error {
 	tags, err := r.session.Tags(repository)
 	if err != nil {
@@ -50,6 +60,22 @@ func (r Registry) Find(repository, tag string) error {
 	return errors.New("Tag not found")
 }
 
+func (r Registry) LayerBlobs(repository, tag string) ([]io.Reader, error) {
+	blobs := []io.Reader{}
+	layers, err := r.Layers(repository, tag)
+	if err != nil {
+		return nil, err
+	}
+	for _, layer := range layers {
+		blob, err := r.Blob(repository, layer.Digest)
+		if err != nil {
+			return nil, err
+		}
+		blobs = append(blobs, blob)
+	}
+	return blobs, nil
+}
+
 func (r Registry) Layers(repository, tag string) ([]distribution.Descriptor, error) {
 	manifest, err := r.session.ManifestV2(repository, tag)
 	if err != nil {
@@ -58,8 +84,22 @@ func (r Registry) Layers(repository, tag string) ([]distribution.Descriptor, err
 	return manifest.Layers, nil
 }
 
-func (r Registry) Blob(repository string, digest digest.Digest) (io.ReadCloser, error) {
-	return r.session.DownloadBlob(repository, digest)
+func (r Registry) Blob(repository string, digest digest.Digest) (io.Reader, error) {
+	blob, err := r.session.DownloadBlob(repository, digest)
+	if err != nil {
+		return nil, err
+	}
+	defer blob.Close()
+
+	gr, err := gzip.NewReader(blob)
+	if err != nil {
+		return nil, err
+	}
+	defer gr.Close()
+
+	buf := new(bytes.Buffer)
+	io.Copy(buf, gr)
+	return buf, nil
 }
 
 func (r Registry) Image(repository, tag string) Image {
