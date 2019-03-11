@@ -20,16 +20,19 @@ func main() {
 
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
-			Name:  "registry-url, r",
-			Usage: "Docker registry url",
+			Name:   "registry-url, r",
+			Usage:  "Docker registry url",
+			EnvVar: "REGISTRY_URL",
 		},
 		cli.StringFlag{
-			Name:  "registry-user, u",
-			Usage: "Docker registry username",
+			Name:   "registry-user, u",
+			Usage:  "Docker registry username",
+			EnvVar: "REGISTRY_USER",
 		},
 		cli.StringFlag{
-			Name:  "registry-pass, p",
-			Usage: "Docker registry password",
+			Name:   "registry-pass, p",
+			Usage:  "Docker registry password",
+			EnvVar: "REGISTRY_PASS",
 		},
 	}
 
