@@ -15,23 +15,23 @@ func main() {
 
 	app := cli.NewApp()
 	app.Name = "undocker"
-	app.Usage = "Parsing docker images."
+	app.Usage = "Decompose docker images."
 	app.Version = "0.1.0"
 
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name:   "registry-url, r",
-			Usage:  "Docker registry url",
+			Usage:  "docker registry url",
 			EnvVar: "REGISTRY_URL",
 		},
 		cli.StringFlag{
 			Name:   "registry-user, u",
-			Usage:  "Docker registry username",
+			Usage:  "docker registry login username",
 			EnvVar: "REGISTRY_USER",
 		},
 		cli.StringFlag{
 			Name:   "registry-pass, p",
-			Usage:  "Docker registry password",
+			Usage:  "docker registry login password",
 			EnvVar: "REGISTRY_PASS",
 		},
 	}
