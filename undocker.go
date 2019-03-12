@@ -1,6 +1,7 @@
 package undocker
 
 import (
+	"fmt"
 	"io"
 	"strings"
 
@@ -30,6 +31,24 @@ func (u Undocker) Extract(c *cli.Context) error {
 	if err := source.Image(repo, tag).Unpack(dst); err != nil {
 		return err
 	}
+	return nil
+}
+
+func (u Undocker) Config(c *cli.Context) error {
+	source, err := createSource(c)
+	if err != nil {
+		return err
+	}
+	repo, tag, err := parseReference(c.Args().Get(0))
+	if err != nil {
+		return err
+	}
+
+	config, err := source.Image(repo, tag).Config()
+	if err != nil {
+		return err
+	}
+	fmt.Fprintln(u.Out, string(config))
 	return nil
 }
 

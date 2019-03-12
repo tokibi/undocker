@@ -49,14 +49,18 @@ func main() {
 				return undocker.Extract(c)
 			},
 		},
-		// {
-		// 	Name:    "config",
-		// 	Aliases: []string{"c"},
-		// 	Usage:   "Show image configuration.",
-		// 	Action: func(c *cli.Context) error {
-		// 		return nil
-		// 	},
-		// },
+		{
+			Name:      "config",
+			Aliases:   []string{"c"},
+			Usage:     "Show image configuration.",
+			ArgsUsage: "[image]",
+			Action: func(c *cli.Context) error {
+				if c.NArg() < 1 {
+					return cli.ShowCommandHelp(c, "config")
+				}
+				return undocker.Config(c)
+			},
+		},
 	}
 
 	app.Run(os.Args)
