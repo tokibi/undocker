@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 func Untar(r io.Reader, dir string) error {
@@ -37,6 +38,12 @@ func untar(r io.Reader, dir string) error {
 				}
 			}
 		case mode.IsRegular():
+			// whiteout file
+			if strings.Contains(abs, ".wh.") {
+				rm := strings.Replace(abs, ".wh.", "", 1)
+				os.RemoveAll(rm)
+				continue
+			}
 			wf, err := os.OpenFile(abs, os.O_CREATE|os.O_RDWR, os.FileMode(f.Mode))
 			if err != nil {
 				return err
