@@ -38,10 +38,14 @@ func main() {
 
 	app.Commands = []cli.Command{
 		{
-			Name:    "extract",
-			Aliases: []string{"e"},
-			Usage:   "Extract to rootfs.",
+			Name:      "extract",
+			Aliases:   []string{"e"},
+			Usage:     "Extract to rootfs.",
+			ArgsUsage: "[image] [destination]",
 			Action: func(c *cli.Context) error {
+				if c.NArg() < 2 {
+					return cli.ShowCommandHelp(c, "extract")
+				}
 				return undocker.Extract(c)
 			},
 		},
