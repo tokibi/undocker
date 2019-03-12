@@ -49,11 +49,7 @@ func (r Registry) Exists(repository, tag string) bool {
 }
 
 func (r Registry) Manifest(repository, tag string) (*schema2.DeserializedManifest, error) {
-	manifest, err := r.session.ManifestV2(repository, tag)
-	if err != nil {
-		return nil, err
-	}
-	return manifest, nil
+	return r.session.ManifestV2(repository, tag)
 }
 
 func (r Registry) Find(repository, tag string) error {
@@ -76,7 +72,7 @@ func (r Registry) LayerBlobs(repository, tag string) ([]io.Reader, error) {
 		return nil, err
 	}
 	for _, layer := range layers {
-		blob, err := r.Blob(repository, layer.Digest)
+		blob, err := r.ExtractedBlob(repository, layer.Digest)
 		if err != nil {
 			return nil, err
 		}
@@ -93,7 +89,7 @@ func (r Registry) Layers(repository, tag string) ([]distribution.Descriptor, err
 	return manifest.Layers, nil
 }
 
-func (r Registry) Blob(repository string, digest digest.Digest) (io.Reader, error) {
+func (r Registry) ExtractedBlob(repository string, digest digest.Digest) (io.Reader, error) {
 	blob, err := r.session.DownloadBlob(repository, digest)
 	if err != nil {
 		return nil, err
