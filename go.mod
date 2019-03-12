@@ -14,10 +14,9 @@ require (
 	github.com/opencontainers/go-digest v1.0.0-rc1
 	github.com/opencontainers/image-spec v1.0.1 // indirect
 	github.com/pkg/errors v0.8.1
-	github.com/sirupsen/logrus v1.3.0 // indirect
+	github.com/sirupsen/logrus v1.4.0 // indirect
 	github.com/stretchr/testify v1.3.0 // indirect
 	github.com/urfave/cli v1.20.0
-	golang.org/x/crypto v0.0.0-20190228161510-8dd112bcdc25 // indirect
-	golang.org/x/net v0.0.0-20190301231341-16b79f2e4e95
-	golang.org/x/sys v0.0.0-20190306220723-b294cbcfc56d // indirect
+	golang.org/x/net v0.0.0-20190311183353-d8887717615a
+	golang.org/x/sys v0.0.0-20190312061237-fead79001313 // indirect
 )
