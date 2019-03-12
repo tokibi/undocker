@@ -1,3 +1,4 @@
 undocker
 !cmd/undocker
 vendor/
+dist/
