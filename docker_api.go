@@ -1,6 +1,7 @@
 package undocker
 
 import (
+	"io/ioutil"
 	"archive/tar"
 	"bytes"
 	"encoding/json"
@@ -61,6 +62,14 @@ func (api DockerAPI) LayerBlobs(repository, tag string) ([]io.Reader, error) {
 		return nil, err
 	}
 	return blob.LayerBlobs()
+}
+
+func (api DockerAPI) Config(repository, tag string) ([]byte, error) {
+	blob, err := api.ImageBlob(repository, tag)
+	if err != nil {
+		return nil, err
+	}
+	return blob.Config()
 }
 
 func (api DockerAPI) Image(repository, tag string) Image {
@@ -134,6 +143,31 @@ func (i *ImageBlob) LayerBlobs() ([]io.Reader, error) {
 		blobs = append(blobs, bufs[layer])
 	}
 	return blobs, nil
+}
+
+func (i *ImageBlob) Config() ([]byte, error) {
+	var manifest Manifest
+	bufs := map[string]io.Reader{}
+
+	tr := tar.NewReader(i.Blob)
+	for {
+		f, err := tr.Next()
+		if err == io.EOF {
+			break
+		}
+		if f.Name == "manifest.json" {
+			manifest, err = unmarshalManifest(tr)
+			if err != nil {
+				return nil, err
+			}
+		}
+		if strings.HasSuffix(f.Name, ".json") {
+			buf := new(bytes.Buffer)
+			io.Copy(buf, tr)
+			bufs[f.Name] = buf
+		}
+	}
+	return ioutil.ReadAll(bufs[manifest.Config])
 }
 
 type Manifest struct {

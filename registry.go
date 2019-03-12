@@ -3,6 +3,7 @@ package undocker
 import (
 	"compress/gzip"
 	"io"
+	"io/ioutil"
 	"strings"
 
 	"github.com/docker/distribution"
@@ -109,6 +110,19 @@ func (r Registry) Image(repository, tag string) Image {
 		Repository: commonRepositoryCompletion(repository),
 		Tag:        tag,
 	}
+}
+
+func (r Registry) Config(repository, tag string) ([]byte, error) {
+	manifest, err := r.Manifest(repository, tag)
+	if err != nil {
+		return nil, err
+	}
+	reader, err := r.session.DownloadBlob(repository, manifest.Config.Digest)
+	if err != nil {
+		return nil, err
+	}
+	defer reader.Close()
+	return ioutil.ReadAll(reader)
 }
 
 func commonRepositoryCompletion(repository string) string {

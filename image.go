@@ -9,6 +9,7 @@ import (
 )
 
 type Source interface {
+	Config(repository, tag string) ([]byte, error)
 	Exists(repository, tag string) bool
 	LayerBlobs(repository, tag string) ([]io.Reader, error)
 	Image(repository, tag string) Image
@@ -32,6 +33,10 @@ func (i Image) Unpack(dir string) error {
 		untar.Untar(blob, dir)
 	}
 	return nil
+}
+
+func (i Image) Config() ([]byte, error) {
+	return i.Source.Config(i.Repository, i.Tag)
 }
 
 func (i Image) Exists() bool {
