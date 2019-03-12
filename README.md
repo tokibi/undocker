@@ -1,5 +1,7 @@
 # undocker
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 Go library and command line tool for decomposing docker images.
 
 ## Command Use
