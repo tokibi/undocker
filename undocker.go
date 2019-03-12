@@ -1,6 +1,7 @@
 package undocker
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"strings"
@@ -48,7 +49,11 @@ func (u Undocker) Config(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	fmt.Fprintln(u.Out, string(config))
+	data, err := json.Marshal(config)
+	if err != nil {
+		return err
+	}
+	fmt.Fprintln(u.Out, string(data))
 	return nil
 }
 

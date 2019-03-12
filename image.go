@@ -1,6 +1,7 @@
 package undocker
 
 import (
+	"encoding/json"
 	"io"
 
 	"github.com/pkg/errors"
@@ -35,8 +36,16 @@ func (i Image) Unpack(dir string) error {
 	return nil
 }
 
-func (i Image) Config() ([]byte, error) {
-	return i.Source.Config(i.Repository, i.Tag)
+func (i Image) Config() (*ImageConfig, error) {
+	bytes, err := i.Source.Config(i.Repository, i.Tag)
+	if err != nil {
+		return nil, err
+	}
+	config := new(ImageConfig)
+	if err := json.Unmarshal(bytes, config); err != nil {
+		return nil, err
+	}
+	return config, nil
 }
 
 func (i Image) Exists() bool {
@@ -49,3 +58,4 @@ func (i Image) Exists() bool {
 func (i Image) LayerBlobs() ([]io.Reader, error) {
 	return i.Source.LayerBlobs(i.Repository, i.Tag)
 }
+
