@@ -1,0 +1,11 @@
+# .goreleaser.yml
+# Build customization
+builds:
+  - main: cmd/undocker/main.go
+    binary: undocker
+    goos:
+      - windows
+      - darwin
+      - linux
+    goarch:
+      - amd64
