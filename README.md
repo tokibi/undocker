@@ -18,6 +18,7 @@ VERSION:
 
 COMMANDS:
      extract, e  Extract to rootfs.
+     config, c   Show image configuration.
      help, h     Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
@@ -32,16 +33,43 @@ GLOBAL OPTIONS:
 
 Extract from local images.
 
-```bash
-undocker extract busybox:latest ./image
+```console
+$ undocker extract busybox:latest ./image
 ```
 
 Extract directly from docker registry.
 
-```bash
-export REGISTRY_USER=xxx # optional
-export REGISTRY_PASS=xxx # optional
-undocker -r "https://registry-1.docker.io/" extract busybox:latest ./image
+```console
+$ export REGISTRY_USER=xxx # optional
+$ export REGISTRY_PASS=xxx # optional
+$ undocker -r "https://registry-1.docker.io/" extract busybox:latest ./image
+```
+
+### Config
+
+Show image config.
+
+```console
+$ undocker config busybox:latest | jq
+{
+  "architecture": "amd64",
+  "config": {
+    "Hostname": "",
+    "Domainname": "",
+    "User": "",
+    "AttachStdin": false,
+    "AttachStdout": false,
+    "AttachStderr": false,
+    "Tty": false,
+    "OpenStdin": false,
+    "StdinOnce": false,
+    "Env": [
+      "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+    ],
+    "Cmd": [
+      "sh"
+    ],
+...
 ```
 
 ## Library Use
@@ -76,5 +104,18 @@ func main() {
         log.Fatal(err)
     }
     registry.Image("busybox", "latest").Unpack(dst)
+}
+```
+
+### Config
+
+```go
+func main() {
+    api, _ := undocker.NewDockerAPI()
+    config, err := api.Image("busybox", "latest").Config()
+    if err != nil {
+        return err
+    }
+    fmt.Println(config.architecture)
 }
 ```
