@@ -4,6 +4,8 @@ import (
 	"io"
 	"strings"
 
+	"github.com/pkg/errors"
+
 	"github.com/urfave/cli"
 )
 
@@ -12,28 +14,45 @@ type Undocker struct {
 }
 
 func (u Undocker) Extract(c *cli.Context) error {
-	url := c.GlobalString("registry-url")
-	user := c.GlobalString("registry-user")
-	pass := c.GlobalString("registry-pass")
-
-	var source Source
-	var err error
-	if url != "" {
-		source, err = NewRegistry(url, user, pass)
-	} else {
-		source, err = NewDockerAPI()
-	}
+	source, err := createSource(c)
 	if err != nil {
 		return err
 	}
-
-	ref := strings.SplitN(c.Args().Get(0), ":", 2)
+	repo, tag, err := parseReference(c.Args().Get(0))
+	if err != nil {
+		return err
+	}
 	dst := c.Args().Get(1)
 	if dst == "" {
 		dst = "."
 	}
-	if err := source.Image(ref[0], ref[1]).Unpack(dst); err != nil {
+
+	if err := source.Image(repo, tag).Unpack(dst); err != nil {
 		return err
 	}
 	return nil
+}
+
+func createSource(c *cli.Context) (src Source, err error) {
+	url := c.GlobalString("registry-url")
+	user := c.GlobalString("registry-user")
+	pass := c.GlobalString("registry-pass")
+
+	if url != "" {
+		src, err = NewRegistry(url, user, pass)
+	} else {
+		src, err = NewDockerAPI()
+	}
+	return
+}
+
+func parseReference(arg string) (repository, tag string, err error) {
+	ref := strings.SplitN(arg, ":", 2)
+	if ref[0] == "" {
+		return "", "", errors.New("Invalid image")
+	}
+	if len(ref) < 2 {
+		return ref[0], "latest", nil
+	}
+	return ref[0], ref[1], nil
 }
