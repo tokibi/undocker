@@ -35,6 +35,8 @@ Extract from local images.
 
 ```console
 $ undocker extract busybox:latest ./image
+$ ls ./image
+bin/  dev/  etc/  home/  root/	tmp/  usr/  var/
 ```
 
 Extract directly from docker registry.
