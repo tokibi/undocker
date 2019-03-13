@@ -6,6 +6,8 @@ Go library and command line tool for decomposing docker images.
 
 ## Command Use
 
+### Usage
+
 ```
 NAME:
    undocker - Decompose docker images.
@@ -27,6 +29,12 @@ GLOBAL OPTIONS:
    --registry-pass value, -p value  docker registry login password [$REGISTRY_PASS]
    --help, -h                       show help
    --version, -v                    print the version
+```
+
+### Installation
+
+```console
+$ go get github.com/tokibi/undocker/cmd/undocker
 ```
 
 ### Extract
