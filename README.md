@@ -33,6 +33,18 @@ GLOBAL OPTIONS:
 
 ### Installation
 
+**homebrew tap:**
+
+```console
+$ brew install tokibi/tap/undocker
+```
+
+**manually:**
+
+Download binany from [releases page](https://github.com/tokibi/undocker/releases)
+
+**go get:**
+
 ```console
 $ go get github.com/tokibi/undocker/cmd/undocker
 ```
