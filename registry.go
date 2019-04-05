@@ -108,7 +108,7 @@ func (r Registry) ExtractedBlob(repository string, digest digest.Digest) (io.Rea
 func (r Registry) Image(repository, tag string) Image {
 	return Image{
 		Source:     r,
-		Repository: commonRepositoryCompletion(repository),
+		Repository: complementOfficialRepoName(repository),
 		Tag:        tag,
 	}
 }
@@ -126,7 +126,7 @@ func (r Registry) Config(repository, tag string) ([]byte, error) {
 	return ioutil.ReadAll(reader)
 }
 
-func commonRepositoryCompletion(repository string) string {
+func complementOfficialRepoName(repository string) string {
 	if len(strings.Split(repository, "/")) == 1 {
 		return "library/" + repository
 	}
