@@ -4,6 +4,7 @@ import (
 	"compress/gzip"
 	"io"
 	"io/ioutil"
+	"net/url"
 	"strings"
 
 	"github.com/docker/distribution"
@@ -14,19 +15,24 @@ import (
 )
 
 type Registry struct {
-	URL      string
+	URL      *url.URL
 	Username string
 	Password string
 	client   *registry.Registry
 }
 
-func NewRegistry(url, username, password string) (*Registry, error) {
-	c, err := auth(url, username, password)
+func NewRegistry(baseURL, username, password string) (*Registry, error) {
+	u, err := url.Parse(baseURL)
 	if err != nil {
 		return nil, err
 	}
+	c, err := auth(u.String(), username, password)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Registry{
-		URL:      url,
+		URL:      u,
 		Username: username,
 		Password: password,
 		client:   c,
