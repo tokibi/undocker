@@ -17,28 +17,29 @@ type Registry struct {
 	URL      string
 	Username string
 	Password string
-	session  *registry.Registry
+	client   *registry.Registry
 }
 
 func NewRegistry(url, username, password string) (*Registry, error) {
-	r := &Registry{
+	c, err := auth(url, username, password)
+	if err != nil {
+		return nil, err
+	}
+	return &Registry{
 		URL:      url,
 		Username: username,
 		Password: password,
-	}
-	if err := r.Authorize(); err != nil {
-		return nil, err
-	}
-	return r, nil
+		client:   c,
+	}, nil
 }
 
-func (r *Registry) Authorize() error {
-	sess, err := registry.New(r.URL, r.Username, r.Password)
+// auth returns client for docker registry
+func auth(url, username, password string) (*registry.Registry, error) {
+	c, err := registry.New(url, username, password)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	r.session = sess
-	return nil
+	return c, nil
 }
 
 func (r Registry) Exists(repository, tag string) bool {
@@ -50,11 +51,11 @@ func (r Registry) Exists(repository, tag string) bool {
 }
 
 func (r Registry) Manifest(repository, tag string) (*schema2.DeserializedManifest, error) {
-	return r.session.ManifestV2(repository, tag)
+	return r.client.ManifestV2(repository, tag)
 }
 
 func (r Registry) Find(repository, tag string) error {
-	tags, err := r.session.Tags(repository)
+	tags, err := r.client.Tags(repository)
 	if err != nil {
 		return errors.Wrap(err, "Repository not found")
 	}
@@ -83,7 +84,7 @@ func (r Registry) LayerBlobs(repository, tag string) ([]io.Reader, error) {
 }
 
 func (r Registry) Layers(repository, tag string) ([]distribution.Descriptor, error) {
-	manifest, err := r.session.ManifestV2(repository, tag)
+	manifest, err := r.client.ManifestV2(repository, tag)
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +92,7 @@ func (r Registry) Layers(repository, tag string) ([]distribution.Descriptor, err
 }
 
 func (r Registry) ExtractedBlob(repository string, digest digest.Digest) (io.Reader, error) {
-	blob, err := r.session.DownloadBlob(repository, digest)
+	blob, err := r.client.DownloadBlob(repository, digest)
 	if err != nil {
 		return nil, err
 	}
@@ -117,7 +118,7 @@ func (r Registry) Config(repository, tag string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	reader, err := r.session.DownloadBlob(repository, manifest.Config.Digest)
+	reader, err := r.client.DownloadBlob(repository, manifest.Config.Digest)
 	if err != nil {
 		return nil, err
 	}
