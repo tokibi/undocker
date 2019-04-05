@@ -2,9 +2,12 @@ package undocker
 
 import (
 	"compress/gzip"
+	"fmt"
 	"io"
 	"io/ioutil"
+	"net/http"
 	"net/url"
+	"path"
 	"strings"
 
 	"github.com/docker/distribution"
@@ -14,11 +17,14 @@ import (
 	"github.com/pkg/errors"
 )
 
+const dockerHubServiceName = "registry.docker.io"
+
 type Registry struct {
-	URL      *url.URL
-	Username string
-	Password string
-	client   *registry.Registry
+	URL         *url.URL
+	Username    string
+	Password    string
+	client      *registry.Registry
+	isDockerHub bool
 }
 
 func NewRegistry(baseURL, username, password string) (*Registry, error) {
@@ -32,10 +38,11 @@ func NewRegistry(baseURL, username, password string) (*Registry, error) {
 	}
 
 	return &Registry{
-		URL:      u,
-		Username: username,
-		Password: password,
-		client:   c,
+		URL:         u,
+		Username:    username,
+		Password:    password,
+		client:      c,
+		isDockerHub: isDockerHub(u),
 	}, nil
 }
 
@@ -112,9 +119,12 @@ func (r Registry) ExtractedBlob(repository string, digest digest.Digest) (io.Rea
 }
 
 func (r Registry) Image(repository, tag string) Image {
+	if r.isDockerHub {
+		repository = complementOfficialRepoName(repository)
+	}
 	return Image{
 		Source:     r,
-		Repository: complementOfficialRepoName(repository),
+		Repository: repository,
 		Tag:        tag,
 	}
 }
@@ -137,4 +147,20 @@ func complementOfficialRepoName(repository string) string {
 		return "library/" + repository
 	}
 	return repository
+}
+
+func isDockerHub(url *url.URL) bool {
+	u := *url
+	u.Path = path.Join(u.Path, "v2")
+
+	resp, err := http.Get(u.String() + "/")
+	if err != nil {
+		return false
+	}
+
+	h := resp.Header.Get("Www-Authenticate")
+	if strings.Contains(h, fmt.Sprintf(`service="%s"`, dockerHubServiceName)) {
+		return true
+	}
+	return false
 }
