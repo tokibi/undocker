@@ -32,16 +32,15 @@ func untar(r io.Reader, dir string, opts Options) error {
 		rel := filepath.FromSlash(f.Name)
 		abs := filepath.Join(dir, rel)
 
-		fi := f.FileInfo()
-		mode := fi.Mode()
 		switch {
-		case mode.IsDir():
+		case f.Typeflag == tar.TypeDir:
 			if _, err := os.Stat(abs); err != nil {
 				if err := os.MkdirAll(abs, 0755); err != nil {
 					return err
 				}
 			}
-		case mode.IsRegular():
+
+		case f.Typeflag == tar.TypeReg:
 			// whiteout file
 			if strings.Contains(abs, ".wh.") {
 				rm := strings.Replace(abs, ".wh.", "", 1)
@@ -56,14 +55,16 @@ func untar(r io.Reader, dir string, opts Options) error {
 				return err
 			}
 			wf.Close()
-		default:
-			if fi.Mode()&os.ModeSymlink == os.ModeSymlink {
-				if opts.OverwriteSymlinkRefs {
-					os.Symlink(filepath.Join(dir, f.Linkname), abs)
-				} else {
-					os.Symlink(f.Linkname, abs)
-				}
+
+		case f.Typeflag == tar.TypeSymlink:
+			if opts.OverwriteSymlinkRefs {
+				os.Symlink(filepath.Join(dir, f.Linkname), abs)
+			} else {
+				os.Symlink(f.Linkname, abs)
 			}
+
+		case f.Typeflag == tar.TypeLink:
+			os.Link(filepath.Join(dir, f.Linkname), abs)
 		}
 	}
 	return nil
