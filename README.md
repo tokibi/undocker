@@ -20,7 +20,7 @@ VERSION:
 
 COMMANDS:
      extract, e  Extract to rootfs.
-     config, c   Show image configuration.
+     show, s     Show image informations
      help, h     Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
@@ -72,7 +72,7 @@ $ undocker -r "https://registry-1.docker.io/" extract busybox:latest ./image
 Show image config.
 
 ```console
-$ undocker config busybox:latest | jq
+$ undocker show config busybox:latest | jq
 {
   "architecture": "amd64",
   "config": {

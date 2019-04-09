@@ -43,47 +43,66 @@ func main() {
 		},
 	}
 
-	app.Commands = []cli.Command{
-		{
-			Name:      "extract",
-			Aliases:   []string{"e"},
-			Usage:     "Extract to rootfs.",
-			ArgsUsage: "[image] [destination]",
-			Flags: []cli.Flag{
-				cli.BoolFlag{
-					Name:        "keep-symlink-refs, k",
-					Usage:       "Keep the destination to which symbolic link refers",
-					Destination: &opts.Extract.KeepSymlinkRefs,
-				},
-			},
-			Action: func(c *cli.Context) error {
-				repo, tag, err := parseReference(c.Args().Get(0))
-				if err != nil {
-					return cli.ShowCommandHelp(c, "extract")
-				}
-
-				dest := c.Args().Get(1)
-				if dest == "" {
-					dest = "."
-				}
-				return u.Extract(repo, tag, dest, opts)
+	extractCommand := cli.Command{
+		Name:      "extract",
+		Aliases:   []string{"e"},
+		Usage:     "Extract to rootfs.",
+		ArgsUsage: "[image] [destination]",
+		Flags: []cli.Flag{
+			cli.BoolFlag{
+				Name:        "overwrite-symlink-refs, s",
+				Usage:       "Overwrite symbolic link references",
+				Destination: &opts.Extract.OverwriteSymlinkRefs,
 			},
 		},
-		{
-			Name:      "config",
-			Aliases:   []string{"c"},
-			Usage:     "Show image configuration.",
-			ArgsUsage: "[image]",
-			Action: func(c *cli.Context) error {
-				repo, tag, err := parseReference(c.Args().Get(0))
-				if err != nil {
-					return cli.ShowCommandHelp(c, "config")
-				}
-				return u.Config(repo, tag, opts)
-			},
+		Action: func(c *cli.Context) error {
+			repo, tag, err := parseReference(c.Args().Get(0))
+			if err != nil {
+				return cli.ShowCommandHelp(c, "extract")
+			}
+
+			dest := c.Args().Get(1)
+			if dest == "" {
+				dest = "."
+			}
+			return u.Extract(repo, tag, dest, opts)
 		},
 	}
 
+	showCommand := cli.Command{
+		Name:    "show",
+		Aliases: []string{"s"},
+		Usage:   "Show image informations",
+		Subcommands: []cli.Command{
+			{
+				Name:      "config",
+				Usage:     "Show image configuration",
+				ArgsUsage: "[image]",
+				Action: func(c *cli.Context) error {
+					repo, tag, err := parseReference(c.Args().Get(0))
+					if err != nil {
+						return cli.ShowCommandHelp(c, "config")
+					}
+					return u.Config(repo, tag, opts)
+				},
+			},
+			// {
+			// 	Name:      "manifest",
+			// 	Usage:     "Show image manifest",
+			// 	ArgsUsage: "[image]",
+			// 	Action: func(c *cli.Context) error {
+			// 		repo, tag, err := parseReference(c.Args().Get(0))
+			// 		if err != nil {
+			// 			return cli.ShowCommandHelp(c, "config")
+			// 		}
+			// 		return u.Config(repo, tag, opts)
+			// 	},
+			// },
+		},
+	}
+
+	app.Commands = append(app.Commands, extractCommand)
+	app.Commands = append(app.Commands, showCommand)
 	app.Run(os.Args)
 }
 

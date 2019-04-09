@@ -9,7 +9,7 @@ import (
 )
 
 type Options struct {
-	KeepSymlinkRefs bool
+	OverwriteSymlinkRefs bool
 }
 
 func Untar(r io.Reader, dir string, opts Options) error {
@@ -58,10 +58,10 @@ func untar(r io.Reader, dir string, opts Options) error {
 			wf.Close()
 		default:
 			if fi.Mode()&os.ModeSymlink == os.ModeSymlink {
-				if opts.KeepSymlinkRefs {
-					os.Symlink(f.Linkname, abs)
-				} else {
+				if opts.OverwriteSymlinkRefs {
 					os.Symlink(filepath.Join(dir, f.Linkname), abs)
+				} else {
+					os.Symlink(f.Linkname, abs)
 				}
 			}
 		}
