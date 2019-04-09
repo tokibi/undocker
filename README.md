@@ -16,7 +16,7 @@ USAGE:
    undocker [global options] command [command options] [arguments...]
 
 VERSION:
-   0.1.0
+   0.1.3
 
 COMMANDS:
      extract, e  Extract to rootfs.
