@@ -55,7 +55,7 @@ func (i Image) Exists() bool {
 	return false
 }
 
+// LayerBlobs return the layers of the image in order from the lower
 func (i Image) LayerBlobs() ([]io.Reader, error) {
 	return i.Source.LayerBlobs(i.Repository, i.Tag)
 }
-

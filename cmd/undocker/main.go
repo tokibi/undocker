@@ -1,17 +1,21 @@
 package main
 
 import (
+	"errors"
 	"os"
+	"strings"
 
 	"github.com/tokibi/undocker"
 	"github.com/urfave/cli"
 )
 
 func main() {
-	undocker := undocker.Undocker{
+	u := undocker.Undocker{
 		Out: os.Stdout,
 		Err: os.Stderr,
 	}
+
+	opts := undocker.Options{}
 
 	app := cli.NewApp()
 	app.Name = "undocker"
@@ -20,19 +24,22 @@ func main() {
 
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
-			Name:   "registry-url, r",
-			Usage:  "docker registry url",
-			EnvVar: "REGISTRY_URL",
+			Name:        "registry-url, r",
+			Usage:       "docker registry url",
+			EnvVar:      "REGISTRY_URL",
+			Destination: &opts.RegistryURL,
 		},
 		cli.StringFlag{
-			Name:   "registry-user, u",
-			Usage:  "docker registry login username",
-			EnvVar: "REGISTRY_USER",
+			Name:        "registry-user, u",
+			Usage:       "docker registry login username",
+			EnvVar:      "REGISTRY_USER",
+			Destination: &opts.RegistryUser,
 		},
 		cli.StringFlag{
-			Name:   "registry-pass, p",
-			Usage:  "docker registry login password",
-			EnvVar: "REGISTRY_PASS",
+			Name:        "registry-pass, p",
+			Usage:       "docker registry login password",
+			EnvVar:      "REGISTRY_PASS",
+			Destination: &opts.RegistryPass,
 		},
 	}
 
@@ -42,11 +49,24 @@ func main() {
 			Aliases:   []string{"e"},
 			Usage:     "Extract to rootfs.",
 			ArgsUsage: "[image] [destination]",
+			Flags: []cli.Flag{
+				cli.BoolFlag{
+					Name:        "keep-symlink-refs, k",
+					Usage:       "Keep the destination to which symbolic link refers",
+					Destination: &opts.Extract.KeepSymlinkRefs,
+				},
+			},
 			Action: func(c *cli.Context) error {
-				if c.NArg() < 2 {
+				repo, tag, err := parseReference(c.Args().Get(0))
+				if err != nil {
 					return cli.ShowCommandHelp(c, "extract")
 				}
-				return undocker.Extract(c)
+
+				dest := c.Args().Get(1)
+				if dest == "" {
+					dest = "."
+				}
+				return u.Extract(repo, tag, dest, opts)
 			},
 		},
 		{
@@ -55,13 +75,25 @@ func main() {
 			Usage:     "Show image configuration.",
 			ArgsUsage: "[image]",
 			Action: func(c *cli.Context) error {
-				if c.NArg() < 1 {
+				repo, tag, err := parseReference(c.Args().Get(0))
+				if err != nil {
 					return cli.ShowCommandHelp(c, "config")
 				}
-				return undocker.Config(c)
+				return u.Config(repo, tag, opts)
 			},
 		},
 	}
 
 	app.Run(os.Args)
+}
+
+func parseReference(arg string) (repository, tag string, err error) {
+	ref := strings.SplitN(arg, ":", 2)
+	if ref[0] == "" {
+		return "", "", errors.New("Invalid image")
+	}
+	if len(ref) < 2 {
+		return ref[0], "latest", nil
+	}
+	return ref[0], ref[1], nil
 }

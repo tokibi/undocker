@@ -69,14 +69,3 @@ func createSource(c *cli.Context) (src Source, err error) {
 	}
 	return
 }
-
-func parseReference(arg string) (repository, tag string, err error) {
-	ref := strings.SplitN(arg, ":", 2)
-	if ref[0] == "" {
-		return "", "", errors.New("Invalid image")
-	}
-	if len(ref) < 2 {
-		return ref[0], "latest", nil
-	}
-	return ref[0], ref[1], nil
-}

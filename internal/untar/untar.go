@@ -52,6 +52,14 @@ func untar(r io.Reader, dir string) error {
 				return err
 			}
 			wf.Close()
+		default:
+			if fi.Mode()&os.ModeSymlink == os.ModeSymlink {
+				if opts.KeepSymlinkRefs {
+					os.Symlink(f.Linkname, abs)
+				} else {
+					os.Symlink(filepath.Join(dir, f.Linkname), abs)
+				}
+			}
 		}
 	}
 	return nil
