@@ -9,6 +9,8 @@ import (
 	"github.com/urfave/cli"
 )
 
+var version = "unknown"
+
 func main() {
 	u := undocker.Undocker{
 		Out: os.Stdout,
@@ -20,7 +22,7 @@ func main() {
 	app := cli.NewApp()
 	app.Name = "undocker"
 	app.Usage = "Decompose docker images."
-	app.Version = "0.1.3"
+	app.Version = version
 
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
