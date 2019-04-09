@@ -24,7 +24,7 @@ func (u Undocker) Extract(repo, tag, dest string, opts Options) error {
 	if err != nil {
 		return err
 	}
-	if err := source.Image(repo, tag).Extract(dest, opts.Extract); err != nil {
+	if err := source.Image(repo, tag).Extract(dest, opts.Extract.OverwriteSymlinkRefs); err != nil {
 		return err
 	}
 	return nil

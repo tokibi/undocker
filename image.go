@@ -23,7 +23,7 @@ type Image struct {
 }
 
 // Extract extracts docker image as rootfs to the specified directory
-func (i Image) Extract(dir string, opts untar.Options) error {
+func (i Image) Extract(dir string, overwriteSymlink bool) error {
 	if !i.Exists() {
 		return errors.New("Image not found")
 	}
@@ -32,14 +32,16 @@ func (i Image) Extract(dir string, opts untar.Options) error {
 		return err
 	}
 	for _, blob := range layerBlobs {
-		untar.Untar(blob, dir, opts)
+		untar.Untar(blob, dir, untar.Options{
+			OverwriteSymlinkRefs: overwriteSymlink,
+		})
 	}
 	return nil
 }
 
 // Unpack is an alias for Extract()
-func (i Image) Unpack(dir string, opts untar.Options) error {
-	return i.Extract(dir, opts)
+func (i Image) Unpack(dir string, overwriteSymlink bool) error {
+	return i.Extract(dir, overwriteSymlink)
 }
 
 func (i Image) Config() (*ImageConfig, error) {
