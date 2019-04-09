@@ -4,43 +4,34 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"strings"
 
-	"github.com/pkg/errors"
-
-	"github.com/urfave/cli"
+	"github.com/tokibi/undocker/internal/untar"
 )
 
 type Undocker struct {
 	Out, Err io.Writer
 }
 
-func (u Undocker) Extract(c *cli.Context) error {
-	source, err := createSource(c)
-	if err != nil {
-		return err
-	}
-	repo, tag, err := parseReference(c.Args().Get(0))
-	if err != nil {
-		return err
-	}
-	dst := c.Args().Get(1)
-	if dst == "" {
-		dst = "."
-	}
+type Options struct {
+	RegistryURL  string
+	RegistryUser string
+	RegistryPass string
+	Extract      untar.Options
+}
 
-	if err := source.Image(repo, tag).Unpack(dst); err != nil {
+func (u Undocker) Extract(repo, tag, dest string, opts Options) error {
+	source, err := createSource(opts)
+	if err != nil {
+		return err
+	}
+	if err := source.Image(repo, tag).Extract(dest, opts.Extract); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (u Undocker) Config(c *cli.Context) error {
-	source, err := createSource(c)
-	if err != nil {
-		return err
-	}
-	repo, tag, err := parseReference(c.Args().Get(0))
+func (u Undocker) Config(repo, tag string, opts Options) error {
+	source, err := createSource(opts)
 	if err != nil {
 		return err
 	}
@@ -57,10 +48,10 @@ func (u Undocker) Config(c *cli.Context) error {
 	return nil
 }
 
-func createSource(c *cli.Context) (src Source, err error) {
-	url := c.GlobalString("registry-url")
-	user := c.GlobalString("registry-user")
-	pass := c.GlobalString("registry-pass")
+func createSource(opts Options) (src Source, err error) {
+	url := opts.RegistryURL
+	user := opts.RegistryUser
+	pass := opts.RegistryPass
 
 	if url != "" {
 		src, err = NewRegistry(url, user, pass)

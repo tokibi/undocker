@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"testing"
 )
 
 func setupMockAPI() (mux *http.ServeMux, serverURL string, teardown func()) {

@@ -22,7 +22,8 @@ type Image struct {
 	Tag        string
 }
 
-func (i Image) Unpack(dir string) error {
+// Extract extracts docker image as rootfs to the specified directory
+func (i Image) Extract(dir string, opts untar.Options) error {
 	if !i.Exists() {
 		return errors.New("Image not found")
 	}
@@ -31,9 +32,14 @@ func (i Image) Unpack(dir string) error {
 		return err
 	}
 	for _, blob := range layerBlobs {
-		untar.Untar(blob, dir)
+		untar.Untar(blob, dir, opts)
 	}
 	return nil
+}
+
+// Unpack is an alias for Extract()
+func (i Image) Unpack(dir string, opts untar.Options) error {
+	return i.Extract(dir, opts)
 }
 
 func (i Image) Config() (*ImageConfig, error) {
@@ -48,6 +54,7 @@ func (i Image) Config() (*ImageConfig, error) {
 	return config, nil
 }
 
+// Exists check the images
 func (i Image) Exists() bool {
 	if i.Source.Exists(i.Repository, i.Tag) {
 		return true

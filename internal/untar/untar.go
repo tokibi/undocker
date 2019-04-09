@@ -8,11 +8,15 @@ import (
 	"strings"
 )
 
-func Untar(r io.Reader, dir string) error {
-	return untar(r, dir)
+type Options struct {
+	KeepSymlinkRefs bool
 }
 
-func untar(r io.Reader, dir string) error {
+func Untar(r io.Reader, dir string, opts Options) error {
+	return untar(r, dir, opts)
+}
+
+func untar(r io.Reader, dir string, opts Options) error {
 	tr := tar.NewReader(r)
 	for {
 		f, err := tr.Next()
