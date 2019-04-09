@@ -108,7 +108,7 @@ func main() {
     if err != nil {
         log.Fatal(err)
     }
-    api.Image("busybox", "latest").Unpack(dst)
+    api.Image("busybox", "latest").Extract(dst, false)
 }
 ```
 
@@ -125,7 +125,7 @@ func main() {
     if err != nil {
         log.Fatal(err)
     }
-    registry.Image("busybox", "latest").Unpack(dst)
+    registry.Image("busybox", "latest").Extract(dst, false)
 }
 ```
 
