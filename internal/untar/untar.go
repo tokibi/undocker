@@ -65,6 +65,16 @@ func untar(r io.Reader, dir string, opts Options) error {
 
 		case f.Typeflag == tar.TypeLink:
 			os.Link(filepath.Join(dir, f.Linkname), abs)
+
+		}
+
+		if f.Typeflag != tar.TypeSymlink { // Symlink not has mode
+			if err = os.Chmod(abs, f.FileInfo().Mode()); err != nil {
+				return err
+			}
+		}
+		if err = os.Lchown(abs, f.Uid, f.Gid); err != nil {
+			return err
 		}
 	}
 	return nil
