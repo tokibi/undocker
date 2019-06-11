@@ -47,7 +47,7 @@ func untar(r io.Reader, dir string, opts Options) error {
 				os.RemoveAll(rm)
 				continue
 			}
-			wf, err := os.OpenFile(abs, os.O_CREATE|os.O_RDWR, os.FileMode(f.Mode))
+			wf, err := os.OpenFile(abs, os.O_CREATE|os.O_RDWR|os.O_TRUNC, os.FileMode(f.Mode))
 			if err != nil {
 				return err
 			}
