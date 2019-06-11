@@ -32,9 +32,13 @@ func (i Image) Extract(dir string, overwriteSymlink bool) error {
 		return err
 	}
 	for _, blob := range layerBlobs {
-		untar.Untar(blob, dir, untar.Options{
+		err = untar.Untar(blob, dir, untar.Options{
 			OverwriteSymlinkRefs: overwriteSymlink,
 		})
+
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
