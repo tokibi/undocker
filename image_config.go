@@ -32,7 +32,7 @@ type Config struct {
 	WorkingDir   string            `json:"WorkingDir"`
 	Entrypoint   []string          `json:"Entrypoint"`
 	OnBuild      []string          `json:"OnBuild"`
-	Labels       map[string]string `json:Labels`
+	Labels       map[string]string `json:"Labels"`
 }
 
 type ContainerConfig struct {
@@ -53,7 +53,7 @@ type ContainerConfig struct {
 	WorkingDir   string            `json:"WorkingDir"`
 	Entrypoint   []string          `json:"Entrypoint"`
 	OnBuild      []string          `json:"OnBuild"`
-	Labels       map[string]string `json:Labels`
+	Labels       map[string]string `json:"Labels"`
 }
 
 type History []struct {
