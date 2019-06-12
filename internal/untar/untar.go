@@ -40,6 +40,13 @@ func untar(r io.Reader, dir string, opts Options) error {
 				}
 			}
 
+			if err = os.Chmod(abs, f.FileInfo().Mode()); err != nil {
+				return err
+			}
+			if err = os.Lchown(abs, f.Uid, f.Gid); err != nil {
+				return err
+			}
+
 		case f.Typeflag == tar.TypeReg:
 			// whiteout file
 			if strings.Contains(abs, ".wh.") {
@@ -47,7 +54,7 @@ func untar(r io.Reader, dir string, opts Options) error {
 				os.RemoveAll(rm)
 				continue
 			}
-			wf, err := os.OpenFile(abs, os.O_CREATE|os.O_RDWR, os.FileMode(f.Mode))
+			wf, err := os.OpenFile(abs, os.O_CREATE|os.O_RDWR|os.O_TRUNC, os.FileMode(f.Mode))
 			if err != nil {
 				return err
 			}
@@ -56,6 +63,13 @@ func untar(r io.Reader, dir string, opts Options) error {
 			}
 			wf.Close()
 
+			if err = os.Chmod(abs, f.FileInfo().Mode()); err != nil {
+				return err
+			}
+			if err = os.Lchown(abs, f.Uid, f.Gid); err != nil {
+				return err
+			}
+
 		case f.Typeflag == tar.TypeSymlink:
 			if opts.OverwriteSymlinkRefs {
 				os.Symlink(filepath.Join(dir, f.Linkname), abs)
@@ -63,8 +77,19 @@ func untar(r io.Reader, dir string, opts Options) error {
 				os.Symlink(f.Linkname, abs)
 			}
 
+			if err = os.Lchown(abs, f.Uid, f.Gid); err != nil {
+				return err
+			}
+
 		case f.Typeflag == tar.TypeLink:
 			os.Link(filepath.Join(dir, f.Linkname), abs)
+
+			if err = os.Chmod(abs, f.FileInfo().Mode()); err != nil {
+				return err
+			}
+			if err = os.Lchown(abs, f.Uid, f.Gid); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
