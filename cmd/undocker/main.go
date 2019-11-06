@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"strings"
 
@@ -105,7 +106,11 @@ func main() {
 
 	app.Commands = append(app.Commands, extractCommand)
 	app.Commands = append(app.Commands, showCommand)
-	app.Run(os.Args)
+	err := app.Run(os.Args)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(3)
+	}
 }
 
 func parseReference(arg string) (repository, tag string, err error) {
