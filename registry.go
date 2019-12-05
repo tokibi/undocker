@@ -123,7 +123,17 @@ func (r Registry) ExtractedBlob(repository string, digest digest.Digest) (io.Rea
 		return nil, err
 	}
 
-	tmpFilePath := filepath.Join("/tmp/undocker", digest.String())
+	tmpDirPath := "/tmp/undocker"
+
+	if stat, err := os.Stat(tmpDirPath); err != nil {
+		// file not found
+		if mkerr := os.Mkdir(tmpDirPath, 0777); mkerr != nil {
+			return nil, mkerr
+		}
+	} else if !stat.IsDir() {
+		return nil, errors.Errorf("%s must be directory", tmpDirPath)
+	}
+	tmpFilePath := filepath.Join(tmpDirPath, digest.String())
 	f, err := os.OpenFile(tmpFilePath, os.O_WRONLY|os.O_CREATE, 0777)
 	if err != nil {
 		return nil, err
