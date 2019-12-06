@@ -9,15 +9,14 @@ builds:
       - linux
     goarch:
       - amd64
-
-brew:
-  name: undocker
-  github:
-    owner: tokibi
-    name: homebrew-tap
-  homepage: "https://github.com/tokibi/undocker/"
-  description: "a tool for decomposing docker images."
-  test: |
-    system "#{bin}/undocker --version"
-  install: |
-    bin.install "undocker"
+#brew:
+#  name: undocker
+#  github:
+#    owner: tokibi
+#    name: homebrew-tap
+#  homepage: "https://github.com/tokibi/undocker/"
+#  description: "a tool for decomposing docker images."
+#  test: |
+#    system "#{bin}/undocker --version"
+#  install: |
+#    bin.install "undocker"
