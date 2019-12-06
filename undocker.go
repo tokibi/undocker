@@ -16,6 +16,7 @@ type Options struct {
 	RegistryURL  string
 	RegistryUser string
 	RegistryPass string
+	TmpPath      string
 	Extract      untar.Options
 }
 
@@ -55,9 +56,10 @@ func createSource(opts Options) (src Source, err error) {
 	url := opts.RegistryURL
 	user := opts.RegistryUser
 	pass := opts.RegistryPass
+	tmppath := opts.TmpPath
 
 	if url != "" {
-		src, err = NewRegistry(url, user, pass)
+		src, err = NewRegistry(url, user, pass, tmppath)
 	} else {
 		src, err = NewDockerAPI()
 	}

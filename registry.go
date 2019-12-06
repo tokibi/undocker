@@ -17,6 +17,7 @@ import (
 	"github.com/heroku/docker-registry-client/registry"
 	"github.com/opencontainers/go-digest"
 	"github.com/pkg/errors"
+	"time"
 )
 
 const dockerHubServiceName = "registry.docker.io"
@@ -27,16 +28,22 @@ type Registry struct {
 	Password    string
 	client      *registry.Registry
 	isDockerHub bool
-
-	tmpfiles []string
+	tmpDir      string
 }
 
-func NewRegistry(baseURL, username, password string) (*Registry, error) {
+func NewRegistry(baseURL, username, password, tmpRoot string) (*Registry, error) {
 	u, err := url.Parse(baseURL)
 	if err != nil {
 		return nil, err
 	}
 	c, err := auth(u.String(), username, password)
+	if err != nil {
+		return nil, err
+	}
+
+	timestamp := time.Now().Format("2006010215030405")
+	tmpdir := filepath.Join(tmpRoot, timestamp)
+	err = os.MkdirAll(tmpdir, 0666)
 	if err != nil {
 		return nil, err
 	}
@@ -47,6 +54,7 @@ func NewRegistry(baseURL, username, password string) (*Registry, error) {
 		Password:    password,
 		client:      c,
 		isDockerHub: isDockerHub(u),
+		tmpDir:      tmpdir,
 	}, nil
 }
 
@@ -109,10 +117,8 @@ func (r Registry) Layers(repository, tag string) ([]distribution.Descriptor, err
 }
 
 func (r Registry) CleanUp() error {
-	for _, f := range r.tmpfiles {
-		if err := os.Remove(f); err != nil {
-			return nil
-		}
+	if err := os.RemoveAll(r.tmpDir); err != nil {
+		return nil
 	}
 	return nil
 }
@@ -123,17 +129,13 @@ func (r Registry) ExtractedBlob(repository string, digest digest.Digest) (io.Rea
 		return nil, err
 	}
 
-	tmpDirPath := "/tmp/undocker"
-
-	if stat, err := os.Stat(tmpDirPath); err != nil {
-		// file not found
-		if mkerr := os.Mkdir(tmpDirPath, 0777); mkerr != nil {
-			return nil, mkerr
-		}
+	if stat, err := os.Stat(r.tmpDir); err != nil {
+		return nil, err
 	} else if !stat.IsDir() {
-		return nil, errors.Errorf("%s must be directory", tmpDirPath)
+		return nil, errors.Errorf("%s must be directory", r.tmpDir)
 	}
-	tmpFilePath := filepath.Join(tmpDirPath, digest.String())
+
+	tmpFilePath := filepath.Join(r.tmpDir, digest.String())
 	f, err := os.OpenFile(tmpFilePath, os.O_WRONLY|os.O_CREATE, 0777)
 	if err != nil {
 		return nil, err
@@ -164,7 +166,6 @@ func (r Registry) ExtractedBlob(repository string, digest digest.Digest) (io.Rea
 		return nil, err
 	}
 
-	r.tmpfiles = append(r.tmpfiles, tmpFilePath)
 	return gr, nil
 }
 
