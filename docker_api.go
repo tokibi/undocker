@@ -1,18 +1,18 @@
 package undocker
 
 import (
-	"io/ioutil"
 	"archive/tar"
 	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"strings"
 
-	"github.com/pkg/errors"
-	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/filters"
 	"github.com/moby/moby/client"
+	"github.com/pkg/errors"
 	"golang.org/x/net/context"
 )
 
@@ -90,6 +90,10 @@ func (api DockerAPI) ImageBlob(repository, tag string) (*ImageBlob, error) {
 		return nil, err
 	}
 	return &ImageBlob{Blob: blob}, err
+}
+
+func (api DockerAPI) CleanUp() error {
+	return nil
 }
 
 type ImageBlob struct {
@@ -188,4 +192,3 @@ func unmarshalManifest(r io.Reader) (Manifest, error) {
 	manifest = (*m)[0]
 	return manifest, nil
 }
-

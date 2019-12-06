@@ -14,6 +14,7 @@ type Source interface {
 	Exists(repository, tag string) bool
 	LayerBlobs(repository, tag string) ([]io.Reader, error)
 	Image(repository, tag string) Image
+	CleanUp() error
 }
 
 type Image struct {

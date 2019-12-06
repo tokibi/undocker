@@ -7,7 +7,9 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"os"
 	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/docker/distribution"
@@ -25,6 +27,8 @@ type Registry struct {
 	Password    string
 	client      *registry.Registry
 	isDockerHub bool
+
+	tmpfiles []string
 }
 
 func NewRegistry(baseURL, username, password string) (*Registry, error) {
@@ -104,17 +108,63 @@ func (r Registry) Layers(repository, tag string) ([]distribution.Descriptor, err
 	return manifest.Layers, nil
 }
 
+func (r Registry) CleanUp() error {
+	for _, f := range r.tmpfiles {
+		if err := os.Remove(f); err != nil {
+			return nil
+		}
+	}
+	return nil
+}
+
 func (r Registry) ExtractedBlob(repository string, digest digest.Digest) (io.Reader, error) {
-	blob, err := r.client.DownloadBlob(repository, digest)
+	httpReader, err := r.client.DownloadBlob(repository, digest)
 	if err != nil {
 		return nil, err
 	}
 
-	// Blob on registry is compressed with gzip.
+	tmpDirPath := "/tmp/undocker"
+
+	if stat, err := os.Stat(tmpDirPath); err != nil {
+		// file not found
+		if mkerr := os.Mkdir(tmpDirPath, 0777); mkerr != nil {
+			return nil, mkerr
+		}
+	} else if !stat.IsDir() {
+		return nil, errors.Errorf("%s must be directory", tmpDirPath)
+	}
+	tmpFilePath := filepath.Join(tmpDirPath, digest.String())
+	f, err := os.OpenFile(tmpFilePath, os.O_WRONLY|os.O_CREATE, 0777)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = io.Copy(f, httpReader)
+	if err != nil {
+		return nil, err
+	}
+
+	err = httpReader.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	err = httpReader.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	blob, err := os.OpenFile(tmpFilePath, os.O_RDONLY, 0777)
+	if err != nil {
+		return nil, err
+	}
+
 	gr, err := gzip.NewReader(blob)
 	if err != nil {
 		return nil, err
 	}
+
+	r.tmpfiles = append(r.tmpfiles, tmpFilePath)
 	return gr, nil
 }
 
