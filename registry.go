@@ -12,12 +12,13 @@ import (
 	"path/filepath"
 	"strings"
 
+	"time"
+
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/manifest/schema2"
 	"github.com/heroku/docker-registry-client/registry"
 	"github.com/opencontainers/go-digest"
 	"github.com/pkg/errors"
-	"time"
 )
 
 const dockerHubServiceName = "registry.docker.io"
@@ -142,11 +143,6 @@ func (r Registry) ExtractedBlob(repository string, digest digest.Digest) (io.Rea
 	}
 
 	_, err = io.Copy(f, httpReader)
-	if err != nil {
-		return nil, err
-	}
-
-	err = httpReader.Close()
 	if err != nil {
 		return nil, err
 	}
