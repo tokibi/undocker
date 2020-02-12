@@ -7,7 +7,9 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"os"
 	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/docker/distribution"
@@ -15,6 +17,7 @@ import (
 	"github.com/heroku/docker-registry-client/registry"
 	"github.com/opencontainers/go-digest"
 	"github.com/pkg/errors"
+	"time"
 )
 
 const dockerHubServiceName = "registry.docker.io"
@@ -25,14 +28,22 @@ type Registry struct {
 	Password    string
 	client      *registry.Registry
 	isDockerHub bool
+	tmpDir      string
 }
 
-func NewRegistry(baseURL, username, password string) (*Registry, error) {
+func NewRegistry(baseURL, username, password, tmpRoot string) (*Registry, error) {
 	u, err := url.Parse(baseURL)
 	if err != nil {
 		return nil, err
 	}
 	c, err := auth(u.String(), username, password)
+	if err != nil {
+		return nil, err
+	}
+
+	timestamp := time.Now().Format("2006010215030405")
+	tmpdir := filepath.Join(tmpRoot, timestamp)
+	err = os.MkdirAll(tmpdir, 0666)
 	if err != nil {
 		return nil, err
 	}
@@ -43,6 +54,7 @@ func NewRegistry(baseURL, username, password string) (*Registry, error) {
 		Password:    password,
 		client:      c,
 		isDockerHub: isDockerHub(u),
+		tmpDir:      tmpdir,
 	}, nil
 }
 
@@ -104,17 +116,56 @@ func (r Registry) Layers(repository, tag string) ([]distribution.Descriptor, err
 	return manifest.Layers, nil
 }
 
+func (r Registry) CleanUp() error {
+	if err := os.RemoveAll(r.tmpDir); err != nil {
+		return nil
+	}
+	return nil
+}
+
 func (r Registry) ExtractedBlob(repository string, digest digest.Digest) (io.Reader, error) {
-	blob, err := r.client.DownloadBlob(repository, digest)
+	httpReader, err := r.client.DownloadBlob(repository, digest)
 	if err != nil {
 		return nil, err
 	}
 
-	// Blob on registry is compressed with gzip.
+	if stat, err := os.Stat(r.tmpDir); err != nil {
+		return nil, err
+	} else if !stat.IsDir() {
+		return nil, errors.Errorf("%s must be directory", r.tmpDir)
+	}
+
+	tmpFilePath := filepath.Join(r.tmpDir, digest.String())
+	f, err := os.OpenFile(tmpFilePath, os.O_WRONLY|os.O_CREATE, 0777)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = io.Copy(f, httpReader)
+	if err != nil {
+		return nil, err
+	}
+
+	err = httpReader.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	err = httpReader.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	blob, err := os.OpenFile(tmpFilePath, os.O_RDONLY, 0777)
+	if err != nil {
+		return nil, err
+	}
+
 	gr, err := gzip.NewReader(blob)
 	if err != nil {
 		return nil, err
 	}
+
 	return gr, nil
 }
 

@@ -44,6 +44,13 @@ func main() {
 			EnvVar:      "REGISTRY_PASS",
 			Destination: &opts.RegistryPass,
 		},
+		cli.StringFlag{
+			Name:        "tmpdir",
+			Value:       "/tmp/undocker",
+			Usage:       "temporal directory to extract image",
+			EnvVar:      "UNDOCKER_TMP_PATH",
+			Destination: &opts.TmpPath,
+		},
 	}
 
 	extractCommand := cli.Command{
