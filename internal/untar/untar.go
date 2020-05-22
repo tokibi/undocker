@@ -71,10 +71,20 @@ func untar(r io.Reader, dir string, opts Options) error {
 			}
 
 		case f.Typeflag == tar.TypeSymlink:
+			if _, err := os.Lstat(abs); err == nil {
+				if errRm := os.Remove(abs); errRm != nil {
+					return errRm
+				}
+			}
+
 			if opts.OverwriteSymlinkRefs {
-				os.Symlink(filepath.Join(dir, f.Linkname), abs)
+				if err := os.Symlink(filepath.Join(dir, f.Linkname), abs); err != nil {
+					return err
+				}
 			} else {
-				os.Symlink(f.Linkname, abs)
+				if err := os.Symlink(f.Linkname, abs); err != nil {
+					return err
+				}
 			}
 
 			if err = os.Lchown(abs, f.Uid, f.Gid); err != nil {
