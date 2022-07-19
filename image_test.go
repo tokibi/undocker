@@ -8,7 +8,7 @@ import (
 )
 
 func TestImage_Extract(t *testing.T) {
-	// tokibi/busybox-bundle-registry
+	// maorv/busybox-bundle-registry
 	registry, err := NewRegistry("http://localhost:5000", "", "")
 	if err != nil {
 		t.Error(err)

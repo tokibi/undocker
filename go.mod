@@ -1,4 +1,4 @@
-module github.com/tokibi/undocker
+module github.com/maorv/undocker
 
 require (
 	github.com/Microsoft/go-winio v0.4.12 // indirect
