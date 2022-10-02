@@ -15,7 +15,7 @@ brews:
     github:
       owner: tokibi
       name: homebrew-tap
-    homepage: "https://github.com/tokibi/undocker/"
+    homepage: "https://github.com/maorv/undocker/"
     description: "a tool for decomposing docker images."
     test: |
       system "#{bin}/undocker --version"

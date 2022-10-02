@@ -44,7 +44,7 @@ func NewRegistry(baseURL, username, password, tmpRoot string) (*Registry, error)
 
 	timestamp := time.Now().Format("2006010215030405")
 	tmpdir := filepath.Join(tmpRoot, timestamp)
-	err = os.MkdirAll(tmpdir, 0666)
+	err = os.MkdirAll(tmpdir, 0755)
 	if err != nil {
 		return nil, err
 	}
